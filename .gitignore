@@ -13,6 +13,8 @@ venv/
 # Total Phase API downloads/extractions must remain local.
 aardvark-api-*.zip
 aardvark-api-windows-*/
+aardvark-api-linux-*/
+aardvark-api-macos-*/
 vendor/
 vendor_api/
 

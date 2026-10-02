@@ -19,26 +19,32 @@ jobs:
       - name: Syntax-check local wheel builder
         run: python -m py_compile tools/build_v600.py
 
-      - name: Confirm vendor v6 payload is not committed
+      - name: Check builder help
+        run: python tools/build_v600.py --help
+
+      - name: Confirm Total Phase API payload is not committed
         shell: python
         run: |
           from pathlib import Path
           import sys
 
-          forbidden_names = {
-            "aardvark-api-windows-x86_64-v6.00.zip",
+          forbidden_exact = {
             "aardvark_py-6.0.0-py3-none-win_amd64.whl",
           }
           bad = []
           for path in Path(".").rglob("*"):
             if not path.is_file() or ".git" in path.parts:
               continue
-            if path.name in forbidden_names:
+            lower_name = path.name.lower()
+            lower_parts = [part.lower() for part in path.parts]
+            if path.name in forbidden_exact:
               bad.append(str(path))
-            if "aardvark-api-windows-x86_64-v6.00" in path.parts:
+            if lower_name.startswith("aardvark-api-") and lower_name.endswith(".zip"):
+              bad.append(str(path))
+            if any(part.startswith("aardvark-api-windows-") for part in lower_parts):
               bad.append(str(path))
           if bad:
-            print("Do not commit Total Phase v6.00 payload/build output:")
+            print("Do not commit Total Phase API payload or generated v6.00 wheel output:")
             for item in sorted(set(bad)):
               print(f"  {item}")
             sys.exit(1)
