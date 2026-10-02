@@ -1,20 +1,24 @@
+# Python build output
+__pycache__/
+*.py[cod]
+build/
+dist/
+*.egg-info/
+*.whl
+
+# Local Python environments
+.venv/
+venv/
+
+# Total Phase API downloads/extractions must remain local.
+aardvark-api-*.zip
+aardvark-api-windows-*/
+aardvark-api-linux-*/
+aardvark-api-macos-*/
+vendor/
+vendor_api/
+
+# Editor/OS files
+.vscode/settings.json
 .DS_Store
-
-# Compiled python modules.
-*.pyc
-*.pyo
-
-# Setuptools folders
-/build/
-/dist/
-
-# Python egg metadata, regenerated from source files by setuptools
-/*.egg-info
-/*.egg
-
-# pyenv version
-.python-version
-
-# Sphinx docs
-docs/_build/
-docs/apidoc/
+Thumbs.db

@@ -1,56 +1,197 @@
-Total Phase Aardvark Python API
-===============================
+Total Phase Aardvark Python API - v6.00 local wheel builder
+===========================================================
 
-Official packages are available on PyPI.
+This fork adds a local Windows x86-64 wheel build path for the **Total Phase
+Aardvark Software API v6.00**.
 
-https://pypi.org/project/aardvark-py/
+The upstream ``aardvark_py`` project packages the Python API supplied in Total
+Phase Aardvark API releases.  The public PyPI package is older than the current
+Total Phase API release, so this fork provides a reproducible way to create a
+modern local wheel from the official v6.00 files downloaded directly from
+Total Phase.
 
+This repository does **not** contain or redistribute the Total Phase v6.00
+``aardvark_py.py`` or ``aardvark.dll`` files.  The build script reads those
+files from an API package obtained by the user from Total Phase and places
+unmodified copies into the locally generated wheel.
 
-The packages are created from the Aardvark API release package.
+What changed in this fork
+-------------------------
 
-https://www.totalphase.com/products/aardvark-software-api
+* Added a local builder for **Aardvark Software API v6.00** on Windows x86-64.
+* Added support for using either the extracted Total Phase API directory or the
+  original downloaded ZIP as the build source.
+* Added validation that the supplied Python wrapper reports
+  ``AA_API_VERSION = 0x0600``.
+* Added validation that the supplied ``aardvark.dll`` is a Windows x86-64 PE
+  library.
+* Added a Windows wheel output:
+  ``aardvark_py-6.0.0-py3-none-win_amd64.whl``.
+* Added ``build_v600.bat``, ``install_v600.bat``, and
+  ``verify_installed.bat`` helper scripts.
+* Added command-line help and source discovery through the
+  ``AARDVARK_API_V600`` environment variable.
+* The local builder uses only the Python standard library.  It does not create
+  a virtual environment and does not require ``setuptools``, ``wheel``, or
+  ``build``.
+* The Total Phase v6.00 vendor payload and generated wheels are excluded from
+  source control.
 
-
-System Requirements
--------------------
-
-- Windows 7 or 10
-- Ubuntu 16.04 LTS or 18.04 LTS
-- Mac OS 10.13+
-- Python 2.6+ or 3.5+
-- 64-bit operating system
-
-
-Installation
+Requirements
 ------------
 
-The ``aardvark_py`` package can be installed from PyPI using ``pip``:
+For the v6.00 local wheel builder you need:
 
-.. code-block:: console
+* Windows x86-64.
+* Python 3.10 or later.  Python 3.12 is supported by the generated wheel
+  metadata.
+* The **Aardvark Software API v6.00 - Windows x86 64-bit** package downloaded
+  directly from Total Phase.
+* A Total Phase Aardvark I2C/SPI Host Adapter for hardware operation and the
+  final device verification step.
 
-    $ pip3 install aardvark_py
+Get the Aardvark Software API
+-----------------------------
 
+Download the current Aardvark Software API from the official Total Phase page:
 
-Usage
------
+https://www.totalphase.com/products/aardvark-software-api/
 
-Once installed, the ``aardvark_py`` package is a drop-in replacement for the
-``aardvark_py.py`` module distributed in the Aardvark API release package.
+Choose **Aardvark Software API v6.00 (Windows x86 64-bit)** for this builder.
+Total Phase currently requires a login for software downloads.
 
-.. code-block:: console
+Do not obtain the API files from this repository.  The build intentionally
+requires the official Total Phase download.
 
-    $ python3
-    >>> from aardvark_py import *
-    >>> aa_find_devices(1)
-    (1, array('H', [0]))
-    >>> handle = aa_open(0)
-    >>> aa_features(handle)
-    27
-    >>> aa_close(handle)
-    1
+Quick build
+-----------
 
+From the repository root, pass either the extracted v6.00 directory:
 
-License
--------
+::
 
-Please see the LICENSE.txt file in the package.
+    build_v600.bat "C:\path\to\aardvark-api-windows-x86_64-v6.00"
+
+or the original Total Phase ZIP:
+
+::
+
+    build_v600.bat "C:\path\to\aardvark-api-windows-x86_64-v6.00.zip"
+
+The generated wheel is written to:
+
+::
+
+    dist\aardvark_py-6.0.0-py3-none-win_amd64.whl
+
+You can also set the source once in an environment variable:
+
+::
+
+    set AARDVARK_API_V600=C:\path\to\aardvark-api-windows-x86_64-v6.00
+    build_v600.bat
+
+If no command-line source or environment variable is supplied, the builder
+also checks for the standard v6.00 directory or ZIP in the repository root and
+its parent directory.
+
+Build and install
+-----------------
+
+Build and immediately install the locally generated wheel with:
+
+::
+
+    install_v600.bat "C:\path\to\aardvark-api-windows-x86_64-v6.00"
+
+or, if ``AARDVARK_API_V600`` is already set:
+
+::
+
+    install_v600.bat
+
+The install helper runs pip with ``--upgrade --force-reinstall`` so that an
+older ``aardvark_py`` installation is replaced.
+
+Verify the installation
+-----------------------
+
+Connect an Aardvark adapter and run:
+
+::
+
+    verify_installed.bat
+
+The output should include:
+
+::
+
+    aardvark_py 6.0.0
+    AA_API_VERSION 0x600
+
+The final line reports the result of ``aa_find_devices(16)``.
+
+Python usage
+------------
+
+The installed package remains compatible with the normal ``aardvark_py``
+import style:
+
+::
+
+    from aardvark_py import *
+
+    count, ports = aa_find_devices(16)
+    print(count, ports)
+
+The v6.00 wheel is intended as a drop-in package around the unmodified Total
+Phase v6.00 Python wrapper and shared library.
+
+Builder command-line help
+-------------------------
+
+The builder may also be run directly:
+
+::
+
+    python tools\build_v600.py --help
+
+For example:
+
+::
+
+    python tools\build_v600.py "C:\path\to\aardvark-api-windows-x86_64-v6.00.zip"
+    python tools\build_v600.py --output-dir C:\temp\wheel-output "C:\path\to\aardvark-api-windows-x86_64-v6.00"
+
+Documentation
+-------------
+
+Detailed build and troubleshooting information is in
+``docs/V600_BUILDING.rst``.  Licensing and redistribution notes are in
+``docs/V600_LICENSE_NOTES.rst``.
+
+Upstream project
+----------------
+
+This repository is a fork of the official Total Phase project:
+
+https://github.com/totalphase/aardvark_py
+
+The v6.00 local-builder additions are separate from Total Phase's upstream
+release process.
+
+License and redistribution
+--------------------------
+
+The Total Phase API package is subject to the license included with the API
+download.  Among other restrictions, that license states that the Product must
+not be placed on a publicly accessible Internet server and specifies additional
+conditions for distribution of a Separate Work using ``aardvark.dll`` or
+``aardvark_py.py``.
+
+For that reason, this public fork contains the builder only.  It does not
+contain the v6.00 Total Phase API payload or a generated v6.00 wheel.
+
+Read the ``LICENSE.txt`` supplied with your Total Phase API download before
+redistributing any generated wheel.  See ``docs/V600_LICENSE_NOTES.rst`` for a
+short repository-specific explanation.
