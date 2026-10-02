@@ -1,0 +1,44 @@
+name: Repository checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check-builder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Syntax-check local wheel builder
+        run: python -m py_compile tools/build_v600.py
+
+      - name: Confirm vendor v6 payload is not committed
+        shell: python
+        run: |
+          from pathlib import Path
+          import sys
+
+          forbidden_names = {
+            "aardvark-api-windows-x86_64-v6.00.zip",
+            "aardvark_py-6.0.0-py3-none-win_amd64.whl",
+          }
+          bad = []
+          for path in Path(".").rglob("*"):
+            if not path.is_file() or ".git" in path.parts:
+              continue
+            if path.name in forbidden_names:
+              bad.append(str(path))
+            if "aardvark-api-windows-x86_64-v6.00" in path.parts:
+              bad.append(str(path))
+          if bad:
+            print("Do not commit Total Phase v6.00 payload/build output:")
+            for item in sorted(set(bad)):
+              print(f"  {item}")
+            sys.exit(1)
